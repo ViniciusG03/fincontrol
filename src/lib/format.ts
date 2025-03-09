@@ -1,5 +1,4 @@
 // src/lib/format.ts
-
 /**
  * Formata um valor numérico para o formato de moeda brasileira (BRL)
  * @param value - Valor a ser formatado
