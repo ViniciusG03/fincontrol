@@ -1,0 +1,188 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String           @id @default(cuid())
+  name           String
+  email          String           @unique
+  emailVerified  DateTime?
+  image          String?
+  password       String?
+  currency       String           @default("BRL")
+  language       String           @default("pt-BR")
+  theme          String           @default("LIGHT")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  accounts       Account[]
+  categories     Category[]
+  transactions   Transaction[]
+  budgets        Budget[]
+  cards          Card[]
+  financialGoals FinancialGoal[]
+}
+
+model Account {
+  id             String        @id @default(cuid())
+  name           String
+  type           AccountType
+  balance        Float         @default(0)
+  currency       String        @default("BRL")
+  color          String?
+  icon           String?
+  isDefault      Boolean       @default(false)
+  includeInTotal Boolean       @default(true)
+  userId         String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions   Transaction[]
+  cards          Card[]
+
+  @@index([userId])
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+  CREDIT_CARD
+  INVESTMENT
+  CASH
+  OTHER
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String
+  color        String
+  icon         String?
+  userId       String
+  parentId     String?
+  isDefault    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent       Category?     @relation("CategoryToCategory", fields: [parentId], references: [id], onDelete: SetNull)
+  subcategories Category[]   @relation("CategoryToCategory")
+  transactions  Transaction[]
+  budgets       Budget[]
+
+  @@index([userId])
+  @@index([parentId])
+}
+
+model Transaction {
+  id           String    @id @default(cuid())
+  description  String
+  amount       Float
+  date         DateTime
+  categoryId   String?
+  accountId    String
+  userId       String
+  notes        String?
+  isRecurring  Boolean   @default(false)
+  recurringId  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category     Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  account      Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  recurring    Recurring? @relation(fields: [recurringId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([accountId])
+  @@index([recurringId])
+}
+
+model Recurring {
+  id          String        @id @default(cuid())
+  description String
+  amount      Float
+  frequency   Frequency
+  startDate   DateTime
+  endDate     DateTime?
+  userId      String
+  categoryId  String?
+  accountId   String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  transactions Transaction[]
+
+  @@index([userId])
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+model Budget {
+  id         String    @id @default(cuid())
+  name       String
+  amount     Float
+  period     Period
+  startDate  DateTime
+  endDate    DateTime?
+  categoryId String?
+  userId     String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([categoryId])
+}
+
+enum Period {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model Card {
+  id           String   @id @default(cuid())
+  name         String
+  lastDigits   String?
+  expiryDate   DateTime?
+  limit        Float?
+  closingDay   Int?
+  dueDay       Int?
+  accountId    String
+  userId       String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([accountId])
+}
+
+model FinancialGoal {
+  id            String   @id @default(cuid())
+  name          String
+  targetAmount  Float
+  currentAmount Float    @default(0)
+  targetDate    DateTime?
+  color         String?
+  icon          String?
+  userId        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
