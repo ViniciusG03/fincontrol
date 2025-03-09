@@ -1,12 +1,8 @@
 // src/app/(app)/layout.tsx
+"use client";
+
 import React from "react";
 import Navigation from "../../components/Navigation";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "FinControl - Dashboard",
-  description: "Controle financeiro pessoal",
-};
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
