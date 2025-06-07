@@ -1,4 +1,4 @@
-// src/app/layout.tsx
+// Layout raiz da aplicação
 import type { Metadata } from "next";
 import "../styles/globals.css";
 
