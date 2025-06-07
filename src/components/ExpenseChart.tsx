@@ -122,7 +122,8 @@ export default function ExpenseChart({
             </h3>
             <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
               {data.map((category, index) => {
-                const percentage = category.value / totalExpenses;
+                const percentage =
+                  totalExpenses === 0 ? 0 : category.value / totalExpenses;
                 return (
                   <div
                     key={category.id}
